@@ -137,15 +137,19 @@ function fitToScreen(){
   const wrap = document.getElementById('fitWrap');
   const target = document.getElementById('fitTarget');
   if(!wrap || !target) return;
-  target.style.transform = 'scale(1)'; // reset
+  target.style.transform = 'none';
+  wrap.classList.remove('scaled');
 
-  const availW = wrap.clientWidth - 24; // guard padding
-  const availH = wrap.clientHeight - 24;
+  const availW = wrap.clientWidth - 24;
   const rect = target.getBoundingClientRect();
-  const contentW = rect.width;
-  const contentH = rect.height;
-  const scale = Math.min(1, Math.max(0.6, Math.min(availW / contentW, availH / contentH)));
-  target.style.transform = `scale(${scale})`;
+  const contentW = rect.width || 1;
+  const widthScale = availW / contentW;
+
+  if(widthScale > 1.05 && window.innerWidth > 1400){
+    const scale = Math.min(1.2, widthScale);
+    target.style.transform = `scale(${scale})`;
+    wrap.classList.add('scaled');
+  }
 }
 
 function renderImages(q){
