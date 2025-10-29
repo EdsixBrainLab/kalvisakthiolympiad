@@ -120,6 +120,12 @@ function preloadAll(urls, onProgress){
   });
 }
 
+function getInitialPhase(question){
+  if(!question) return 'question';
+  const hasLeadImage = !!question.imageFirst && (question.image || (question.images && question.images.length));
+  return hasLeadImage ? 'image' : 'question';
+}
+
 function updateHeader(){
   const total = QUESTIONS.length;
   $('#progress').textContent = `Question ${idx+1} / ${total}`;
@@ -131,21 +137,67 @@ function updateHeader(){
   const pct = ((idx) / (total-1 || 1)) * 100; // avoid NaN when total==1
   const bar = $('#progressBar');
   if(bar) bar.style.width = `${pct}%`;
+
+  const nav = document.getElementById('questionNav');
+  if(nav){
+    const buttons = nav.querySelectorAll('button');
+    buttons.forEach((btn, i) => {
+      const isCurrent = i === idx;
+      const isUpcoming = phase === 'interlude' && interludeTargetIdx === i;
+      btn.classList.toggle('active', isCurrent);
+      btn.classList.toggle('completed', i < idx);
+      btn.classList.toggle('upcoming', isUpcoming);
+      btn.setAttribute('aria-current', isCurrent ? 'true' : 'false');
+    });
+    const activeBtn = nav.querySelector('button.active');
+    activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+}
+
+function buildQuestionNav(){
+  const nav = document.getElementById('questionNav');
+  if(!nav) return;
+  nav.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = String(i + 1);
+    btn.title = `Go to Question ${i + 1}`;
+    btn.setAttribute('aria-label', `Go to Question ${i + 1}`);
+    btn.addEventListener('click', () => jumpToQuestion(i));
+    nav.appendChild(btn);
+  });
 }
 
 function fitToScreen(){
   const wrap = document.getElementById('fitWrap');
   const target = document.getElementById('fitTarget');
   if(!wrap || !target) return;
-  target.style.transform = 'scale(1)'; // reset
+  target.style.transform = 'none';
+  wrap.classList.remove('scaled');
 
-  const availW = wrap.clientWidth - 24; // guard padding
-  const availH = wrap.clientHeight - 24;
   const rect = target.getBoundingClientRect();
-  const contentW = rect.width;
-  const contentH = rect.height;
-  const scale = Math.min(1, Math.max(0.6, Math.min(availW / contentW, availH / contentH)));
-  target.style.transform = `scale(${scale})`;
+  if(!rect.width || !rect.height) return;
+
+  const availW = Math.max(0, wrap.clientWidth - 24);
+  const availH = Math.max(0, wrap.clientHeight - 24);
+  if(!availW || !availH) return;
+
+  const widthScale = availW / rect.width;
+  const heightScale = availH / rect.height;
+  const downscale = Math.min(widthScale, heightScale);
+
+  if(downscale < 0.999){
+    target.style.transform = `scale(${downscale})`;
+    wrap.classList.add('scaled');
+    return;
+  }
+
+  const upscale = Math.min(widthScale, heightScale, 1.12);
+  if(upscale > 1.02){
+    target.style.transform = `scale(${upscale})`;
+    wrap.classList.add('scaled');
+  }
 }
 
 function renderImages(q){
@@ -166,7 +218,9 @@ function renderImages(q){
 
   urls.forEach(src => {
     const img = document.createElement('img');
-    img.src = src; img.alt = '';
+    img.alt = '';
+    img.addEventListener('load', fitToScreen, { once: true });
+    img.src = src;
     img.className = 'img-enter';
     wrapper.appendChild(img);
     requestAnimationFrame(()=>{ img.classList.add('img-enter-active'); });
@@ -174,6 +228,7 @@ function renderImages(q){
 
   media.appendChild(wrapper);
   media.classList.remove('hidden');
+  requestAnimationFrame(fitToScreen);
 }
 
 function renderQuestion(q){
@@ -185,6 +240,9 @@ function renderQuestion(q){
   qs.innerHTML = sanitizeHTML(q.subtext || '');
   qs.classList.toggle('hidden', !q.subtext);
 
+  qt.querySelectorAll('img').forEach(img => img.addEventListener('load', fitToScreen, { once: true }));
+  qs.querySelectorAll('img').forEach(img => img.addEventListener('load', fitToScreen, { once: true }));
+
   // If image exists and not in image-first phase, show it above question
   if(!q.imageFirst && (q.image || (q.images && q.images.length))){ renderImages(q); }
   else { $('#mediaBlock').classList.add('hidden'); }
@@ -192,8 +250,11 @@ function renderQuestion(q){
   // Choices
   const choices = $('#choices');
   choices.innerHTML = '';
+  const opts = (q.options || []).slice(0,4);
+  const textOnly = opts.length > 0 && opts.every(opt => !opt.image);
+  choices.classList.toggle('text-only', textOnly);
   const labels = ['A','B','C','D'];
-  (q.options || []).slice(0,4).forEach((opt, i) => {
+  opts.forEach((opt, i) => {
     const row = el('div','choice');
     const lab = el('div','label');
     lab.textContent = labels[i];
@@ -204,7 +265,13 @@ function renderQuestion(q){
     optname.textContent = `Option ${labels[i]}`;
     content.appendChild(optname);*/
 
-    if(opt.image){ const img = document.createElement('img'); img.src = opt.image; img.alt=''; content.appendChild(img); }
+    if(opt.image){
+      const img = document.createElement('img');
+      img.alt='';
+      img.addEventListener('load', fitToScreen, { once: true });
+      img.src = opt.image;
+      content.appendChild(img);
+    }
     if(opt.text){ const span = el('div','text'); span.textContent = opt.text; content.appendChild(span); }
 
     row.appendChild(content);
@@ -213,13 +280,15 @@ function renderQuestion(q){
 
   // Animate in question & choices (staggered)
   requestAnimationFrame(() => {
-    const items = [qt, ...choices.children];
+    const items = [qt, qs, ...choices.children].filter(node => !node.classList.contains('hidden'));
     items.forEach((node, i) => {
       node.classList.add('fade-up');
       setTimeout(() => node.classList.add('fade-up-active'), 60 + i*70);
       setTimeout(() => node.classList.remove('fade-up','fade-up-active'), 700);
     });
   });
+
+  requestAnimationFrame(fitToScreen);
 }
 
 function render(){
@@ -231,6 +300,9 @@ function render(){
     const title = document.getElementById('interludeTitle');
     const badge = document.getElementById('interludeBadge');
     const meta = document.getElementById('interludeMeta');
+
+    document.getElementById('cardInner')?.classList.remove('media-only');
+    $('#mediaBlock').classList.remove('media-only');
 
     const target = interludeTargetIdx;
     if(target != null && target < QUESTIONS.length){
@@ -256,10 +328,19 @@ function render(){
 
   // Decide if we are in an image-only phase
   const twoPhase = !!q.imageFirst && (q.image || (q.images && q.images.length));
+  const cardInner = document.getElementById('cardInner');
+  const mediaBlock = $('#mediaBlock');
+
   if(twoPhase && phase === 'image'){
+    const imageCount = (q.image ? 1 : 0) + (Array.isArray(q.images) ? q.images.length : 0);
+    const centerMedia = imageCount === 1;
+    cardInner?.classList.toggle('media-only', centerMedia);
+    mediaBlock?.classList.toggle('media-only', centerMedia);
     renderImages(q);
     $('#questionBlock').classList.add('hidden');
   } else {
+    cardInner?.classList.remove('media-only');
+    mediaBlock?.classList.remove('media-only');
     $('#mediaBlock').classList.add('hidden');
     $('#questionBlock').classList.remove('hidden');
     renderQuestion(q);
@@ -303,7 +384,7 @@ function next(){
   // From interlude -> slide in next question
   if(interludeTargetIdx != null){
     slideTransition('next', () => {
-      idx = interludeTargetIdx; interludeTargetIdx = null; phase = QUESTIONS[idx].imageFirst ? 'image' : 'question';
+      idx = interludeTargetIdx; interludeTargetIdx = null; phase = getInitialPhase(QUESTIONS[idx]);
       render();
     });
   }
@@ -317,10 +398,33 @@ function prev(){
 
   if(idx > 0){
     slideTransition('prev', () => {
-      idx--; phase = QUESTIONS[idx].imageFirst ? 'image' : 'question';
+      idx--; phase = getInitialPhase(QUESTIONS[idx]);
       render();
     });
     indicate(`Back to Q ${idx}`);
+  }
+}
+
+function jumpToQuestion(targetIdx){
+  if(targetIdx < 0 || targetIdx >= QUESTIONS.length) return;
+  if(targetIdx === idx && (phase !== 'interlude' || interludeTargetIdx == null)) return;
+
+  interludeTargetIdx = null;
+  const targetPhase = getInitialPhase(QUESTIONS[targetIdx]);
+  const distance = Math.abs(targetIdx - idx);
+  const direction = targetIdx > idx ? 'next' : 'prev';
+
+  const performJump = () => {
+    idx = targetIdx;
+    phase = targetPhase;
+    render();
+    indicate(`Jumped to Q ${idx+1}`);
+  };
+
+  if(distance === 1 && phase !== 'interlude'){
+    slideTransition(direction, performJump);
+  } else {
+    performJump();
   }
 }
 
@@ -398,6 +502,9 @@ syncHeaderHeight();
   const urls = collectAllImageUrls();
   if(totEl) totEl.textContent = urls.length;
 
+  buildQuestionNav();
+  syncHeaderHeight();
+
   preloadAll(urls, (loaded, total, pct) => {
     if(bar) bar.style.width = pct + '%';
     if(pctEl) pctEl.textContent = pct + '%';
@@ -405,7 +512,7 @@ syncHeaderHeight();
   }).then(() => {
     // Determine starting phase
     const q0 = QUESTIONS[0];
-    phase = q0 && q0.imageFirst && (q0.image || (q0.images && q0.images.length)) ? 'image' : 'question';
+    phase = getInitialPhase(q0);
     document.getElementById('setName').textContent = 'Grade 7';
     // Hide loader and render first screen
     loader.classList.remove('show');
