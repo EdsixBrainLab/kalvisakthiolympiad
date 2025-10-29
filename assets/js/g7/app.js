@@ -214,8 +214,11 @@ function renderQuestion(q){
   // Choices
   const choices = $('#choices');
   choices.innerHTML = '';
+  const opts = (q.options || []).slice(0,4);
+  const textOnly = opts.length > 0 && opts.every(opt => !opt.image);
+  choices.classList.toggle('text-only', textOnly);
   const labels = ['A','B','C','D'];
-  (q.options || []).slice(0,4).forEach((opt, i) => {
+  opts.forEach((opt, i) => {
     const row = el('div','choice');
     const lab = el('div','label');
     lab.textContent = labels[i];
