@@ -135,9 +135,9 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   min-height: 0;
 }
 .card-inner.map-zoom {
-  flex-direction: column;
-  gap: clamp(32px, 3.4vw, 48px);
+  flex-direction: row;
   align-items: stretch;
+  gap: clamp(36px, 3.6vw, 56px);
 }
 .card-inner.media-only {
   justify-content: center;
@@ -175,11 +175,10 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   align-self: stretch;
 }
 .media-area.map-zoom {
-  flex: 0 0 auto;
-  width: 100%;
-  max-width: none;
-  min-height: clamp(360px, 62vh, 760px);
-  padding: clamp(12px, 1.8vw, 20px);
+  flex: 0 1 clamp(640px, 58%, 1320px);
+  max-width: clamp(640px, 64%, 1400px);
+  min-height: clamp(420px, 64vh, 880px);
+  padding: clamp(16px, 2vw, 26px);
 }
 .media-area.map-zoom > div {
   width: 100%;
@@ -227,8 +226,19 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   min-height: 0;
 }
 #questionBlock.map-zoom {
-  flex: 0 1 auto;
-  width: 100%;
+  flex: 0 1 clamp(360px, 38%, 640px);
+  width: auto;
+  gap: clamp(24px, 2.6vw, 34px);
+  min-height: 0;
+}
+
+#questionBlock.map-zoom .choices {
+  grid-template-columns: 1fr;
+  gap: clamp(18px, 2vw, 26px);
+}
+
+#questionBlock.map-zoom .choice {
+  align-items: flex-start;
 }
 
 .question-pane {
@@ -317,6 +327,7 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
 
 @media (max-width: 1200px) {
   .card-inner { flex-direction: column; gap: 24px; }
+  .card-inner.map-zoom { flex-direction: column; }
   .media-area {
     flex: 0 0 auto;
     max-width: none;
@@ -336,6 +347,8 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   header .meta { order: 2; width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 8px; margin-left: 0; }
   header .meta span { width: auto; }
   .display-card { padding: 16px; border-radius: 18px; }
+  .media-area.map-zoom { min-height: 0; }
+  #questionBlock.map-zoom { width: 100%; }
   .question-text { font-size: clamp(20px, 5vw, 36px); }
   .question-sub { font-size: clamp(14px, 3.5vw, 20px); }
   .choices { gap: 12px; }
