@@ -135,9 +135,9 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   min-height: 0;
 }
 .card-inner.map-zoom {
-  flex-direction: row;
-  align-items: stretch;
-  gap: clamp(36px, 3.6vw, 56px);
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(32px, 3vw, 48px);
 }
 .card-inner.media-only {
   justify-content: center;
@@ -175,13 +175,17 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   align-self: stretch;
 }
 .media-area.map-zoom {
-  flex: 0 1 clamp(640px, 58%, 1320px);
-  max-width: clamp(640px, 64%, 1400px);
+  flex: 0 0 auto;
+  width: min(100%, 1260px);
+  max-width: 100%;
   min-height: clamp(420px, 64vh, 880px);
-  padding: clamp(16px, 2vw, 26px);
+  padding: clamp(18px, 2.4vw, 30px);
+  margin-left: auto;
+  margin-right: auto;
 }
 .media-area.map-zoom > div {
   width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
 }
 .media-area.media-only {
@@ -226,19 +230,43 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   min-height: 0;
 }
 #questionBlock.map-zoom {
-  flex: 0 1 clamp(360px, 38%, 640px);
-  width: auto;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: none;
   gap: clamp(24px, 2.6vw, 34px);
   min-height: 0;
+  margin: 0;
 }
 
 #questionBlock.map-zoom .choices {
-  grid-template-columns: 1fr;
-  gap: clamp(18px, 2vw, 26px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 28px);
+  width: 100%;
+  align-items: stretch;
 }
 
 #questionBlock.map-zoom .choice {
   align-items: flex-start;
+  width: 100%;
+}
+
+@media (max-width: 1500px) {
+  #questionBlock.map-zoom .choices {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  #questionBlock.map-zoom .choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  #questionBlock.map-zoom .choices {
+    grid-template-columns: 1fr;
+  }
 }
 
 .question-pane {
@@ -349,6 +377,8 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   .display-card { padding: 16px; border-radius: 18px; }
   .media-area.map-zoom { min-height: 0; }
   #questionBlock.map-zoom { width: 100%; }
+  #questionBlock.map-zoom .choices { flex-direction: column; gap: 12px; }
+  #questionBlock.map-zoom .choice { width: 100%; }
   .question-text { font-size: clamp(20px, 5vw, 36px); }
   .question-sub { font-size: clamp(14px, 3.5vw, 20px); }
   .choices { gap: 12px; }
