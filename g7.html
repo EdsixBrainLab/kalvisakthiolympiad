@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Olympiad</title>
+  <!-- Readable, kid-friendly fonts for TV -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-row">
+      <h1>Olympiad <span class="sr-only">for Grades 7</span></h1>
+      <div class="controls-inline">
+        <button id="prevBtn" title="Previous (←)">⟵ Previous</button>
+        <button id="nextBtn" title="Next (→)">Next ⟶</button>
+        <button id="fsBtn" title="Toggle Fullscreen (F)">⛶ Fullscreen</button>
+      </div>
+      <div class="meta">
+        <span id="setName">Grade 7</span>
+        <span id="progress" class="progress-label">Question 1 / 20</span>
+        <!--<span id="phasePill" class="pill">Question</span>-->
+      </div>
+    </div>
+    <div class="progress"><div id="progressBar" class="bar" style="width:0%"></div></div>
+  </header>
+
+  <main class="stage">
+    <div id="fitWrap" class="fit-wrap">
+      <section class="display-card" id="fitTarget">
+        <div id="cardInner" class="card-inner">
+          <div id="mediaBlock" class="media-area hidden"></div>
+          <div id="questionBlock">
+            <p id="questionText" class="question-text"></p>
+            <p id="questionSub" class="question-sub hidden"></p>
+            <div id="choices" class="choices"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Interlude overlay + single toast -->
+    <div id="interlude" class="interlude" aria-live="polite">
+      <div class="panel">
+        <div class="badge" id="interludeBadge">Next Question</div>
+        <h2 id="interludeTitle">Get ready for Question</h2>
+        <p id="interludeMeta">Press <strong>Next</strong> to continue</p>
+      </div>
+    </div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+  </main>
+
+  <!-- Preloader overlay -->
+  <div id="loader" class="loader show" aria-live="polite">
+    <div class="panel">
+      <div class="logo">Olympiad</div>
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="meter" aria-hidden="true"><div id="loadBar" class="bar"></div></div>
+      <div class="meta"><span id="loadCount">0</span>/<span id="loadTotal">0</span> images • <span id="loadPct">0%</span></div>
+      <div id="loadTip" class="tip">Preloading images for smooth playback…</div>
+    </div>
+  </div>
+
+  <script src="assets/js/g7/app.js"></script>
+</body>
+</html>
