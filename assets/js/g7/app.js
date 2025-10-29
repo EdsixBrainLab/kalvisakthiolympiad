@@ -241,7 +241,7 @@ function renderQuestion(q){
 
   // Animate in question & choices (staggered)
   requestAnimationFrame(() => {
-    const items = [qt, ...choices.children];
+    const items = [qt, qs, ...choices.children].filter(node => !node.classList.contains('hidden'));
     items.forEach((node, i) => {
       node.classList.add('fade-up');
       setTimeout(() => node.classList.add('fade-up-active'), 60 + i*70);
