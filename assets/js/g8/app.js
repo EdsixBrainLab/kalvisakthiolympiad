@@ -279,6 +279,12 @@ function render(){
   const twoPhase = !!q.imageFirst && (q.image || (q.images && q.images.length));
   const cardInner = document.getElementById('cardInner');
   const mediaBlock = $('#mediaBlock');
+  const questionBlock = document.getElementById('questionBlock');
+  const isLargeMap = q?.id === 20;
+
+  cardInner?.classList.toggle('map-zoom', isLargeMap);
+  mediaBlock?.classList.toggle('map-zoom', isLargeMap);
+  questionBlock?.classList.toggle('map-zoom', isLargeMap);
 
   if(twoPhase && phase === 'image'){
     const imageCount = (q.image ? 1 : 0) + (Array.isArray(q.images) ? q.images.length : 0);
