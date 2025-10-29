@@ -109,7 +109,8 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
 }
 #fitTarget {
   transform-origin: top center;
-  width: min(100%, 1200px);
+  width: 100%;
+  max-width: 1500px;
   overflow: hidden;
 }
 
@@ -119,7 +120,7 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   border-radius: 20px;
   padding: 18px;
   min-height: 300px;
-  max-width: 1400px;
+  width: 100%;
   box-shadow: 0 14px 36px rgba(0,0,0,0.35);
   display: flex;
   flex-direction: column;
@@ -160,8 +161,8 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   justify-content: center;
   align-items: center;
   min-height: 160px;
-  flex: 0 0 clamp(280px, 38%, 480px);
-  max-width: clamp(280px, 42%, 520px);
+  flex: 0 0 clamp(320px, 42%, 560px);
+  max-width: clamp(320px, 46%, 640px);
   background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
   border-radius: 14px;
   overflow: hidden;
