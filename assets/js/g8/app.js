@@ -214,6 +214,9 @@ function render(){
     const badge = document.getElementById('interludeBadge');
     const meta = document.getElementById('interludeMeta');
 
+    document.getElementById('cardInner')?.classList.remove('media-only');
+    $('#mediaBlock').classList.remove('media-only');
+
     const target = interludeTargetIdx;
     if(target != null && target < QUESTIONS.length){
       title.textContent = `Get ready for Question ${target+1}`;
@@ -238,10 +241,19 @@ function render(){
 
   // Decide if we are in an image-only phase
   const twoPhase = !!q.imageFirst && (q.image || (q.images && q.images.length));
+  const cardInner = document.getElementById('cardInner');
+  const mediaBlock = $('#mediaBlock');
+
   if(twoPhase && phase === 'image'){
+    const imageCount = (q.image ? 1 : 0) + (Array.isArray(q.images) ? q.images.length : 0);
+    const centerMedia = imageCount === 1;
+    cardInner?.classList.toggle('media-only', centerMedia);
+    mediaBlock?.classList.toggle('media-only', centerMedia);
     renderImages(q);
     $('#questionBlock').classList.add('hidden');
   } else {
+    cardInner?.classList.remove('media-only');
+    mediaBlock?.classList.remove('media-only');
     $('#mediaBlock').classList.add('hidden');
     $('#questionBlock').classList.remove('hidden');
     renderQuestion(q);
