@@ -23,6 +23,7 @@
         <!--<span id="phasePill" class="pill">Question</span>-->
       </div>
     </div>
+    <div id="questionNav" class="question-nav" role="group" aria-label="Jump to question"></div>
     <div class="progress"><div id="progressBar" class="bar" style="width:0%"></div></div>
   </header>
 
@@ -31,9 +32,11 @@
       <section class="display-card" id="fitTarget">
         <div id="cardInner" class="card-inner">
           <div id="mediaBlock" class="media-area hidden"></div>
-          <div id="questionBlock">
-            <p id="questionText" class="question-text"></p>
-            <p id="questionSub" class="question-sub hidden"></p>
+          <div id="questionBlock" class="question-layout">
+            <div class="question-pane">
+              <p id="questionText" class="question-text"></p>
+              <p id="questionSub" class="question-sub hidden"></p>
+            </div>
             <div id="choices" class="choices"></div>
           </div>
         </div>
