@@ -137,15 +137,31 @@ function fitToScreen(){
   const wrap = document.getElementById('fitWrap');
   const target = document.getElementById('fitTarget');
   if(!wrap || !target) return;
-  target.style.transform = 'scale(1)'; // reset
+  target.style.transform = 'none';
+  wrap.classList.remove('scaled');
 
-  const availW = wrap.clientWidth - 24; // guard padding
-  const availH = wrap.clientHeight - 24;
   const rect = target.getBoundingClientRect();
-  const contentW = rect.width;
-  const contentH = rect.height;
-  const scale = Math.min(1, Math.max(0.6, Math.min(availW / contentW, availH / contentH)));
-  target.style.transform = `scale(${scale})`;
+  if(!rect.width || !rect.height) return;
+
+  const availW = Math.max(0, wrap.clientWidth - 24);
+  const availH = Math.max(0, wrap.clientHeight - 24);
+  if(!availW || !availH) return;
+
+  const widthScale = availW / rect.width;
+  const heightScale = availH / rect.height;
+  const downscale = Math.min(widthScale, heightScale);
+
+  if(downscale < 0.999){
+    target.style.transform = `scale(${downscale})`;
+    wrap.classList.add('scaled');
+    return;
+  }
+
+  const upscale = Math.min(widthScale, heightScale, 1.12);
+  if(upscale > 1.02){
+    target.style.transform = `scale(${upscale})`;
+    wrap.classList.add('scaled');
+  }
 }
 
 function renderImages(q){
@@ -166,7 +182,9 @@ function renderImages(q){
 
   urls.forEach(src => {
     const img = document.createElement('img');
-    img.src = src; img.alt = '';
+    img.alt = '';
+    img.addEventListener('load', fitToScreen, { once: true });
+    img.src = src;
     img.className = 'img-enter';
     wrapper.appendChild(img);
     requestAnimationFrame(()=>{ img.classList.add('img-enter-active'); });
@@ -174,6 +192,7 @@ function renderImages(q){
 
   media.appendChild(wrapper);
   media.classList.remove('hidden');
+  requestAnimationFrame(fitToScreen);
 }
 
 function renderQuestion(q){
@@ -185,6 +204,9 @@ function renderQuestion(q){
   qs.innerHTML = sanitizeHTML(q.subtext || '');
   qs.classList.toggle('hidden', !q.subtext);
 
+  qt.querySelectorAll('img').forEach(img => img.addEventListener('load', fitToScreen, { once: true }));
+  qs.querySelectorAll('img').forEach(img => img.addEventListener('load', fitToScreen, { once: true }));
+
   // If image exists and not in image-first phase, show it above question
   if(!q.imageFirst && (q.image || (q.images && q.images.length))){ renderImages(q); }
   else { $('#mediaBlock').classList.add('hidden'); }
@@ -192,8 +214,11 @@ function renderQuestion(q){
   // Choices
   const choices = $('#choices');
   choices.innerHTML = '';
+  const opts = (q.options || []).slice(0,4);
+  const textOnly = opts.length > 0 && opts.every(opt => !opt.image);
+  choices.classList.toggle('text-only', textOnly);
   const labels = ['A','B','C','D'];
-  (q.options || []).slice(0,4).forEach((opt, i) => {
+  opts.forEach((opt, i) => {
     const row = el('div','choice');
     const lab = el('div','label');
     lab.textContent = labels[i];
@@ -204,7 +229,13 @@ function renderQuestion(q){
     optname.textContent = `Option ${labels[i]}`;
     content.appendChild(optname);*/
 
-    if(opt.image){ const img = document.createElement('img'); img.src = opt.image; img.alt=''; content.appendChild(img); }
+    if(opt.image){
+      const img = document.createElement('img');
+      img.alt='';
+      img.addEventListener('load', fitToScreen, { once: true });
+      img.src = opt.image;
+      content.appendChild(img);
+    }
     if(opt.text){ const span = el('div','text'); span.textContent = opt.text; content.appendChild(span); }
 
     row.appendChild(content);
@@ -213,13 +244,15 @@ function renderQuestion(q){
 
   // Animate in question & choices (staggered)
   requestAnimationFrame(() => {
-    const items = [qt, ...choices.children];
+    const items = [qt, qs, ...choices.children].filter(node => !node.classList.contains('hidden'));
     items.forEach((node, i) => {
       node.classList.add('fade-up');
       setTimeout(() => node.classList.add('fade-up-active'), 60 + i*70);
       setTimeout(() => node.classList.remove('fade-up','fade-up-active'), 700);
     });
   });
+
+  requestAnimationFrame(fitToScreen);
 }
 
 function render(){
