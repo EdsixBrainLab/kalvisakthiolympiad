@@ -72,6 +72,12 @@ function preloadAll(urls, onProgress){
   });
 }
 
+function getInitialPhase(question){
+  if(!question) return 'question';
+  const hasLeadImage = !!question.imageFirst && (question.image || (question.images && question.images.length));
+  return hasLeadImage ? 'image' : 'question';
+}
+
 function updateHeader(){
   const total = QUESTIONS.length;
   $('#progress').textContent = `Question ${idx+1} / ${total}`;
@@ -83,6 +89,36 @@ function updateHeader(){
   const pct = ((idx) / (total-1 || 1)) * 100; // avoid NaN when total==1
   const bar = $('#progressBar');
   if(bar) bar.style.width = `${pct}%`;
+
+  const nav = document.getElementById('questionNav');
+  if(nav){
+    const buttons = nav.querySelectorAll('button');
+    buttons.forEach((btn, i) => {
+      const isCurrent = i === idx;
+      const isUpcoming = phase === 'interlude' && interludeTargetIdx === i;
+      btn.classList.toggle('active', isCurrent);
+      btn.classList.toggle('completed', i < idx);
+      btn.classList.toggle('upcoming', isUpcoming);
+      btn.setAttribute('aria-current', isCurrent ? 'true' : 'false');
+    });
+    const activeBtn = nav.querySelector('button.active');
+    activeBtn?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+}
+
+function buildQuestionNav(){
+  const nav = document.getElementById('questionNav');
+  if(!nav) return;
+  nav.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = String(i + 1);
+    btn.title = `Go to Question ${i + 1}`;
+    btn.setAttribute('aria-label', `Go to Question ${i + 1}`);
+    btn.addEventListener('click', () => jumpToQuestion(i));
+    nav.appendChild(btn);
+  });
 }
 
 function fitToScreen(){
@@ -297,7 +333,7 @@ function next(){
   // From interlude -> slide in next question
   if(interludeTargetIdx != null){
     slideTransition('next', () => {
-      idx = interludeTargetIdx; interludeTargetIdx = null; phase = QUESTIONS[idx].imageFirst ? 'image' : 'question';
+      idx = interludeTargetIdx; interludeTargetIdx = null; phase = getInitialPhase(QUESTIONS[idx]);
       render();
     });
   }
@@ -311,10 +347,33 @@ function prev(){
 
   if(idx > 0){
     slideTransition('prev', () => {
-      idx--; phase = QUESTIONS[idx].imageFirst ? 'image' : 'question';
+      idx--; phase = getInitialPhase(QUESTIONS[idx]);
       render();
     });
     indicate(`Back to Q ${idx}`);
+  }
+}
+
+function jumpToQuestion(targetIdx){
+  if(targetIdx < 0 || targetIdx >= QUESTIONS.length) return;
+  if(targetIdx === idx && (phase !== 'interlude' || interludeTargetIdx == null)) return;
+
+  interludeTargetIdx = null;
+  const targetPhase = getInitialPhase(QUESTIONS[targetIdx]);
+  const distance = Math.abs(targetIdx - idx);
+  const direction = targetIdx > idx ? 'next' : 'prev';
+
+  const performJump = () => {
+    idx = targetIdx;
+    phase = targetPhase;
+    render();
+    indicate(`Jumped to Q ${idx+1}`);
+  };
+
+  if(distance === 1 && phase !== 'interlude'){
+    slideTransition(direction, performJump);
+  } else {
+    performJump();
   }
 }
 
@@ -392,6 +451,9 @@ syncHeaderHeight();
   const urls = collectAllImageUrls();
   if(totEl) totEl.textContent = urls.length;
 
+  buildQuestionNav();
+  syncHeaderHeight();
+
   preloadAll(urls, (loaded, total, pct) => {
     if(bar) bar.style.width = pct + '%';
     if(pctEl) pctEl.textContent = pct + '%';
@@ -399,7 +461,7 @@ syncHeaderHeight();
   }).then(() => {
     // Determine starting phase
     const q0 = QUESTIONS[0];
-    phase = q0 && q0.imageFirst && (q0.image || (q0.images && q0.images.length)) ? 'image' : 'question';
+    phase = getInitialPhase(q0);
     document.getElementById('setName').textContent = 'Grade 6';
     // Hide loader and render first screen
     loader.classList.remove('show');
