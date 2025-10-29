@@ -18,8 +18,7 @@ body {
   background: radial-gradient(1200px 800px at 80% 0%, rgba(167,139,250,0.09), transparent 60%), var(--bg);
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
   display: grid; grid-template-rows: auto 1fr; gap: 8px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 }
 
@@ -42,19 +41,23 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
 .progress .bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 320ms ease; }
 
 /* Stage area takes the rest of the viewport; we scale the card to fit */
-.stage { min-height: calc(100vh - var(--header-h) - 8px); padding: 10px 14px 14px; }
+.stage {
+  min-height: calc(100vh - var(--header-h) - 8px);
+  padding: 14px 18px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
 .fit-wrap {
   height: 100%;
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  overflow-y: auto;
-  padding: 8px 0 16px;
+  overflow: hidden;
 }
 .fit-wrap.scaled {
-  align-items: center;
-  overflow: hidden;
+  align-items: flex-start;
 }
 #fitTarget {
   transform-origin: top center;
@@ -102,8 +105,9 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
-  flex: 0 1 clamp(220px, 45vh, 420px);
+  min-height: 160px;
+  max-height: clamp(220px, 40vh, 360px);
+  flex: 0 0 auto;
   background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
   border-radius: 14px;
   overflow: hidden;
@@ -122,7 +126,7 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
 .question-text { font-family: 'Baloo 2', 'Inter', system-ui; font-size: clamp(26px, 3.4vw, 46px); line-height: 1.3; margin: 0; font-weight: 800; }
 .question-sub { margin-top: 8px; color: var(--muted); font-size: clamp(14px, 1.8vw, 20px); }
 
-.choices { display: grid; gap: 14px; margin-top: 18px; flex: 1 1 auto; overflow-y: auto; padding-right: 6px; align-content: start; }
+.choices { display: grid; gap: 14px; margin-top: 18px; flex: 0 0 auto; align-content: start; }
 @media (min-width: 1100px) { .choices { grid-template-columns: 1fr 1fr; } }
 
 .choice { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; padding: 16px; border-radius: 14px; background: var(--btn); border: 1px solid rgba(255,255,255,0.12); }
@@ -178,10 +182,9 @@ header .meta span { padding:4px 10px; border-radius: 999px; background: rgba(255
 #imcimg{width:80px;}
 
 @media (max-width: 1024px) {
-  .stage { min-height: 0; height: auto; padding: 16px 16px 24px; }
-  .fit-wrap { height: auto; align-items: stretch; overflow: visible; padding: 0; }
+  .stage { padding: 12px 12px 18px; }
+  .fit-wrap { padding: 0; }
   #fitTarget { width: 100%; }
-  .choices { overflow: visible; padding-right: 0; }
 }
 
 @media (max-width: 900px) {
